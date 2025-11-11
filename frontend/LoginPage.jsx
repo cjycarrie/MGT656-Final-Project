@@ -6,14 +6,19 @@ import { useState } from "react";
  *   POST  /api/auth/token/   -> { access, refresh }
  *   GET   /api/auth/me/      -> { id, username, email }
  *
- * The backend base URL comes from:
+ * Backend base URL (prefer Vite):
  *   Vite:        import.meta.env.VITE_API_URL
- *   Create React App: process.env.REACT_APP_API_URL
+ *   CRA (legacy): process.env.REACT_APP_API_URL
  */
 export default function LoginPage() {
+  // Safe env resolution: never reference `process` unless it exists.
   const API =
-    (typeof import.meta !== "undefined" && import.meta.env?.VITE_API_URL) ||
-    process.env.REACT_APP_API_URL ||
+    (typeof import.meta !== "undefined" &&
+      import.meta.env &&
+      import.meta.env.VITE_API_URL) ||
+    (typeof process !== "undefined" &&
+      process.env &&
+      process.env.REACT_APP_API_URL) ||
     "";
 
   const [username, setUsername] = useState("");
@@ -29,7 +34,11 @@ export default function LoginPage() {
     setMe(null);
 
     try {
-      if (!API) throw new Error("Missing API base URL env (VITE_API_URL or REACT_APP_API_URL).");
+      if (!API) {
+        throw new Error(
+          "Missing API base URL. Set VITE_API_URL (Vite) or REACT_APP_API_URL (CRA) in your environment."
+        );
+      }
 
       // 1) Get tokens
       const tokenRes = await fetch(`${API}/api/auth/token/`, {
@@ -39,9 +48,12 @@ export default function LoginPage() {
       });
 
       if (!tokenRes.ok) {
-        const msg = tokenRes.status === 401 ? "Invalid username or password." : "Login failed.";
+        const msg =
+          tokenRes.status === 401
+            ? "Invalid username or password."
+            : `Login failed (${tokenRes.status}).`;
         throw new Error(msg);
-      }
+        }
 
       const { access, refresh } = await tokenRes.json();
       localStorage.setItem("access", access);
@@ -56,7 +68,7 @@ export default function LoginPage() {
       const meJson = await meRes.json();
       setMe(meJson);
     } catch (err) {
-      setError(err.message || "Something went wrong.");
+      setError(err?.message || "Something went wrong.");
     } finally {
       setLoading(false);
     }
