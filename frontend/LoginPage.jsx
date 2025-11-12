@@ -2,24 +2,14 @@ import { useState } from "react";
 
 /**
  * Trackly Login Page (frontend-only)
- * Talks to Django endpoints:
- *   POST  /api/auth/token/   -> { access, refresh }
- *   GET   /api/auth/me/      -> { id, username, email }
+ * Backend base URL: import.meta.env.VITE_API_URL (e.g. https://trackly-3smc.onrender.com)
  *
- * Backend base URL (prefer Vite):
- *   Vite:        import.meta.env.VITE_API_URL
- *   CRA (legacy): process.env.REACT_APP_API_URL
+ * Login:  POST  /login/   -> returns JSON (may set session cookie)
+ * Me:     GET   /me/      -> returns { id, username, email }   (adjust if your backend uses a different path)
  */
 export default function LoginPage() {
-  // Safe env resolution: never reference `process` unless it exists.
   const API =
-    (typeof import.meta !== "undefined" &&
-      import.meta.env &&
-      import.meta.env.VITE_API_URL) ||
-    (typeof process !== "undefined" &&
-      process.env &&
-      process.env.REACT_APP_API_URL) ||
-    "";
+    (typeof import.meta !== "undefined" && import.meta.env?.VITE_API_URL) || "";
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -34,41 +24,65 @@ export default function LoginPage() {
     setMe(null);
 
     try {
-      if (!API) {
-        throw new Error(
-          "Missing API base URL. Set VITE_API_URL (Vite) or REACT_APP_API_URL (CRA) in your environment."
-        );
-      }
+      if (!API) throw new Error("Missing VITE_API_URL.");
 
-      // 1) Get tokens
-      const tokenRes = await fetch(`${API}/api/auth/token/`, {
+      // 1) Login — backend said POST /login/
+      const tokenRes = await fetch(`${API}/login/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        // include credentials in case backend uses session cookies
+        credentials: "include",
         body: JSON.stringify({ username, password }),
       });
 
       if (!tokenRes.ok) {
-        const msg =
-          tokenRes.status === 401
-            ? "Invalid username or password."
-            : `Login failed (${tokenRes.status}).`;
+        // Try to read server's error message if any
+        let msg = "Login failed.";
+        try {
+          const j = await tokenRes.json();
+          msg = j.detail || j.message || msg;
+        } catch (_) {}
         throw new Error(msg);
-        }
+      }
 
-      const { access, refresh } = await tokenRes.json();
-      localStorage.setItem("access", access);
-      localStorage.setItem("refresh", refresh);
+      // Try to parse JSON (could contain tokens or just a message)
+      let loginJson = null;
+      try {
+        loginJson = await tokenRes.json();
+      } catch (_) {
+        // no JSON body is also fine if we're using session cookies
+      }
 
-      // 2) Fetch current user
-      const meRes = await fetch(`${API}/api/auth/me/`, {
-        headers: { Authorization: `Bearer ${access}` },
+      // If tokens were returned, stash them (optional; harmless if absent)
+      const access = loginJson?.access || loginJson?.token || loginJson?.access_token;
+      const refresh = loginJson?.refresh || loginJson?.refresh_token;
+      if (access) localStorage.setItem("access", access);
+      if (refresh) localStorage.setItem("refresh", refresh);
+
+      // 2) Fetch current user — common path is /me/ when using sessions.
+      // If your backend exposes a different path, update it here.
+      let meRes = await fetch(`${API}/me/`, {
+        credentials: "include",
+        headers: access ? { Authorization: `Bearer ${access}` } : undefined,
       });
 
-      if (!meRes.ok) throw new Error("Authenticated request failed.");
+      // Fallback to the old path if /me/ doesn't exist
+      if (!meRes.ok && meRes.status === 404) {
+        meRes = await fetch(`${API}/api/auth/me/`, {
+          credentials: "include",
+          headers: access ? { Authorization: `Bearer ${access}` } : undefined,
+        });
+      }
+
+      if (!meRes.ok) {
+        // Not fatal for demo; still show login response if any
+        throw new Error("Authenticated request failed (check /me/ path or CORS).");
+      }
+
       const meJson = await meRes.json();
       setMe(meJson);
     } catch (err) {
-      setError(err?.message || "Something went wrong.");
+      setError(err.message || "Something went wrong.");
     } finally {
       setLoading(false);
     }
@@ -128,13 +142,15 @@ export default function LoginPage() {
             background: "#f9fafb",
           }}
         >
-          <strong>Welcome, {me.username}</strong>
-          <div style={{ fontSize: 14, color: "#374151" }}>{me.email}</div>
+          <strong>Welcome, {me.username || me.email || "user"}</strong>
+          <div style={{ fontSize: 14, color: "#374151" }}>
+            {me.email || me.username || ""}
+          </div>
         </div>
       )}
 
       <p style={{ marginTop: 16, fontSize: 12, color: "#6b7280" }}>
-        API: {API || "(not set — add VITE_API_URL or REACT_APP_API_URL in environment)"}
+        API: {API || "(not set — add VITE_API_URL in .env.local)"}
       </p>
     </div>
   );
