@@ -16,66 +16,48 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [me, setMe] = useState(null);
 
-  async function handleLogin(e) {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
-    setMe(null);
+async function handleLogin(e) {
+  e.preventDefault();
+  setError("");
+  setLoading(true);
+  setMe(null);
 
-    try {
-      // 1️⃣ Call your backend directly
-      const loginRes = await fetch("https://trackly-3smc.onrender.com/login/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
-      });
+  try {
+    const API = import.meta.env.VITE_API_URL;
+    if (!API) throw new Error("Missing VITE_API_URL");
 
-      // 2️⃣ Check if login was successful
-      if (!loginRes.ok) {
-        let msg = "Login failed.";
-        try {
-          const j = await loginRes.json();
-          msg = j.detail || j.message || msg;
-        } catch (_) {}
-        throw new Error(msg);
-      }
+    const res = await fetch(`${API}/login/`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      // ⚠️ do NOT add credentials: 'include' unless backend is using cookies
+      body: JSON.stringify({ username, password }),
+    });
 
-      // 3️⃣ Try to read JSON response (if any)
-      let loginJson = null;
-      try {
-        loginJson = await loginRes.json();
-      } catch (_) {}
-
-      console.log("Login response:", loginJson);
-
-      // 4️⃣ Optionally store tokens (if backend returns any)
-      const access =
-        loginJson?.access || loginJson?.token || loginJson?.access_token;
-      const refresh =
-        loginJson?.refresh || loginJson?.refresh_token;
-      if (access) localStorage.setItem("access", access);
-      if (refresh) localStorage.setItem("refresh", refresh);
-
-      // 5️⃣ (Optional) Fetch current user if backend has a /me/ route
-      // comment this out if your backend doesn't have a /me/ endpoint yet
-      const meRes = await fetch("https://trackly-3smc.onrender.com/me/", {
-        headers: access ? { Authorization: `Bearer ${access}` } : undefined,
-      });
-
-      if (meRes.ok) {
-        const meJson = await meRes.json();
-        setMe(meJson);
-      } else {
-        console.warn("No /me/ endpoint or user not returned.");
-      }
-
-    } catch (err) {
-      console.error(err);
-      setError(err.message || "Something went wrong.");
-    } finally {
-      setLoading(false);
+    if (!res.ok) {
+      let msg = "Login failed.";
+      try { const j = await res.json(); msg = j.detail || j.message || msg; } catch {}
+      throw new Error(msg);
     }
+
+    let data = null;
+    try { data = await res.json(); } catch {}
+    // If tokens are returned, store them (harmless if not present)
+    const access = data?.access || data?.token || data?.access_token;
+    const refresh = data?.refresh || data?.refresh_token;
+    if (access) localStorage.setItem("access", access);
+    if (refresh) localStorage.setItem("refresh", refresh);
+
+    // If your backend exposes a “who am I” endpoint, set it here (optional)
+    // const meRes = await fetch(`${API}/me/`);
+    // if (meRes.ok) setMe(await meRes.json());
+
+    setError("");
+  } catch (err) {
+    setError(err.message || "Something went wrong.");
+  } finally {
+    setLoading(false);
   }
+}
 
   return (
     <div style={{ maxWidth: 360, margin: "48px auto", fontFamily: "system-ui" }}>
