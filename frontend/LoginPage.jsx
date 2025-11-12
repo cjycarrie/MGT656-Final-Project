@@ -2,14 +2,13 @@ import { useState } from "react";
 
 /**
  * Trackly Login Page (frontend-only)
- * Backend base URL: import.meta.env.VITE_API_URL (e.g. https://trackly-3smc.onrender.com)
- *
- * Login:  POST  /login/   -> returns JSON (may set session cookie)
- * Me:     GET   /me/      -> returns { id, username, email }   (adjust if your backend uses a different path)
+ * DEV uses Vite proxy:
+ *   Frontend calls:  /api/login/   and  /api/me/
+ *   Vite forwards to: https://trackly-3smc.onrender.com
  */
 export default function LoginPage() {
-  const API =
-    (typeof import.meta !== "undefined" && import.meta.env?.VITE_API_URL) || "";
+  // Display string for the footer so users know we're proxying in dev
+  const API_DISPLAY = "Vite proxy → https://trackly-3smc.onrender.com";
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -24,58 +23,42 @@ export default function LoginPage() {
     setMe(null);
 
     try {
-      if (!API) throw new Error("Missing VITE_API_URL.");
-
-      // 1) Login — backend said POST /login/
-      const tokenRes = await fetch(`${API}/login/`, {
+      // 1) Login via proxied path (no full origin needed)
+      const loginRes = await fetch(`/api/login/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        // include credentials in case backend uses session cookies
-        credentials: "include",
+        credentials: "include", // in case backend uses session cookies
         body: JSON.stringify({ username, password }),
       });
 
-      if (!tokenRes.ok) {
-        // Try to read server's error message if any
+      if (!loginRes.ok) {
         let msg = "Login failed.";
         try {
-          const j = await tokenRes.json();
+          const j = await loginRes.json();
           msg = j.detail || j.message || msg;
         } catch (_) {}
         throw new Error(msg);
       }
 
-      // Try to parse JSON (could contain tokens or just a message)
+      // If backend returns tokens, stash them (harmless if absent)
       let loginJson = null;
       try {
-        loginJson = await tokenRes.json();
-      } catch (_) {
-        // no JSON body is also fine if we're using session cookies
-      }
-
-      // If tokens were returned, stash them (optional; harmless if absent)
-      const access = loginJson?.access || loginJson?.token || loginJson?.access_token;
-      const refresh = loginJson?.refresh || loginJson?.refresh_token;
+        loginJson = await loginRes.json();
+      } catch (_) {}
+      const access =
+        loginJson?.access || loginJson?.token || loginJson?.access_token;
+      const refresh =
+        loginJson?.refresh || loginJson?.refresh_token;
       if (access) localStorage.setItem("access", access);
       if (refresh) localStorage.setItem("refresh", refresh);
 
-      // 2) Fetch current user — common path is /me/ when using sessions.
-      // If your backend exposes a different path, update it here.
-      let meRes = await fetch(`${API}/me/`, {
+      // 2) Fetch current user — adjust path if your backend uses a different one
+      const meRes = await fetch(`/api/me/`, {
         credentials: "include",
         headers: access ? { Authorization: `Bearer ${access}` } : undefined,
       });
 
-      // Fallback to the old path if /me/ doesn't exist
-      if (!meRes.ok && meRes.status === 404) {
-        meRes = await fetch(`${API}/api/auth/me/`, {
-          credentials: "include",
-          headers: access ? { Authorization: `Bearer ${access}` } : undefined,
-        });
-      }
-
       if (!meRes.ok) {
-        // Not fatal for demo; still show login response if any
         throw new Error("Authenticated request failed (check /me/ path or CORS).");
       }
 
@@ -150,8 +133,9 @@ export default function LoginPage() {
       )}
 
       <p style={{ marginTop: 16, fontSize: 12, color: "#6b7280" }}>
-        API: {API || "(not set — add VITE_API_URL in .env.local)"}
+        API: {API_DISPLAY}
       </p>
     </div>
   );
 }
+
