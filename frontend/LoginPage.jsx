@@ -23,48 +23,30 @@ async function handleLogin(e) {
   setMe(null);
 
   try {
-    const API = import.meta.env.VITE_API_URL; // e.g. https://trackly-3smc.onrender.com
+    const API = import.meta.env.VITE_API_URL; // https://trackly-3smc.onrender.com
     if (!API) throw new Error("Missing VITE_API_URL");
 
-    // 1) Login
-    const loginRes = await fetch(`${API}/login/`, {
+    const res = await fetch(`${API}/login/`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      // add credentials: 'include' ONLY if backend uses session cookies
       body: JSON.stringify({ username, password }),
+      // no credentials: 'include' unless your backend uses cookies
     });
 
-    if (!loginRes.ok) {
+    if (!res.ok) {
       let msg = "Login failed.";
-      try { const j = await loginRes.json(); msg = j.detail || j.message || msg; } catch {}
+      try {
+        const j = await res.json();
+        msg = j.detail || j.message || msg;
+      } catch {}
       throw new Error(msg);
     }
 
-    // 2) Parse optional JSON (tokens or message)
-    let loginJson = null;
-    try { loginJson = await loginRes.json(); } catch {}
-    console.log("Login response:", loginJson);
-
-    const access =
-      loginJson?.access || loginJson?.token || loginJson?.access_token;
-    const refresh =
-      loginJson?.refresh || loginJson?.refresh_token;
-    if (access) localStorage.setItem("access", access);
-    if (refresh) localStorage.setItem("refresh", refresh);
-
-    // 3) Optional: fetch current user if backend provides it
-    try {
-      const meRes = await fetch(`${API}/me/`, {
-        headers: access ? { Authorization: `Bearer ${access}` } : undefined,
-      });
-      if (meRes.ok) setMe(await meRes.json());
-    } catch (_) {
-      // ignore if /me/ doesn't exist yet
-    }
-
+    // Backend currently returns: { "status": "OK" }
+    // Treat that as success and show the user as logged in.
+    setMe({ username }); // or set a nicer “logged in” state
     setError("");
   } catch (err) {
-    console.error(err);
     setError(err.message || "Something went wrong.");
   } finally {
     setLoading(false);
