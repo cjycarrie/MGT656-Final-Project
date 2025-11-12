@@ -1,23 +1,41 @@
 # Sprint 2 Planning
 
-**Date:** Nov 10 – Nov 17, 2025  
+**Date:** November 5 – November 12, 2025  
 **Duration:** 1 week  
-**Sprint Goal:** Deploy working application to staging with basic user authentication
 
-### Selected User Stories
+---
+
+## Sprint Goal
+Successfully deploy all components of the application — backend (Django), database (PostgreSQL on Render), and frontend — to staging environments.
+Ensure the backend connects correctly to the external PostgreSQL database, and the frontend can access backend APIs to test the login functionality.
+
+---
+
+## Selected User Stories
+
 | Issue # | Title | Story Points | Assignees |
 |----------|--------|--------------|------------|
-| #12 | User login page | 5 | Alice |
-| #13 | Connect backend to PostgreSQL | 8 | Bob |
-| #14 | Deploy backend to Render | 3 | Carol |
+| #1 | XXXXX | 5 | Le |
+| #2 | XXXXX | 8 | Le |
+| #3 | XXXXX | 5 | Jingyi |
+| #4 | XXXXX | 8 | Jingyi |
+| #5 | Deploy PostgreSQL database on Render and provide connection to backend | 5 | Junyi |
+| #6 | Create test user data (username and password) in the database to verify login functionality | 3 | Junyi |
 
-**Total Committed Story Points:** 16  
-**Team Capacity:**  
-- Alice: Frontend (login page)  
-- Bob: Backend (database setup)  
-- Carol: Deployment & testing  
+**Total Committed Story Points:** 34  
 
-**Dependencies / Risks:**  
-- Need database connection ready before testing login  
-- Render free tier may have timeouts
+---
 
+## Team Capacity
+
+| Member | Role | Key Responsibilities |
+|---------|------|----------------------|
+| Le | Backend Lead | xxxx |
+| Jingyi | Frontend Lead | xxxx|
+| Junyi | Database | Set up Render PostgreSQL database, connect with backend, provide connection credentials, and verify test data. |
+
+---
+
+## Dependencies and Risks
+
+xxxxxx
