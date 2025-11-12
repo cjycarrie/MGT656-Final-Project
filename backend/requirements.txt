@@ -135,3 +135,4 @@ webencodings==0.5.1
 websocket-client==1.8.0
 gunicorn==21.2.0
 whitenoise==6.5.0
+django-cors-headers
