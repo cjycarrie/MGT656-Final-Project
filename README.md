@@ -25,4 +25,4 @@ Security
 
 - `.env` and sqlite DB files are ignored in `.gitignore`. Do not commit secrets into the repo.
 
-If you want, I can add a tiny deploy script or CI step to run migrations automatically on deploy.
+
