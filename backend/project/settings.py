@@ -61,5 +61,11 @@ LOGGING = {
 
 # CORS - allow frontend to call API. For quick testing we allow all origins.
 # In production, set this to a list of allowed origins instead of True.
+# Allow localhost dev frontend and allow credentials
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+    # add other allowed origins here, e.g. "https://your-production-frontend.com"
+]
 CORS_ALLOW_ALL_ORIGINS = True
+
 
