@@ -1,9 +1,11 @@
-const API = import.meta.env.VITE_API_URL; // should be https://trackly-3smc.onrender.com
-await fetch(`${API}/login/`, {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ username, password }),
-});
+// frontend/vite.config.js
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+
+export default defineConfig({
+  plugins: [react()],
+})
+
 
 
 
