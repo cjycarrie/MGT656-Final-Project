@@ -36,9 +36,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    # Your apps
-    'users',
-    'posts',
+    # Your apps (namespaced under the `logs` package)
+    'logs.users',
+    'logs.posts',
 
     # Third-party
     'rest_framework',
@@ -51,6 +51,8 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',   # Must come first
     'django.middleware.security.SecurityMiddleware',
+    # WhiteNoise middleware will serve static files in production (after SecurityMiddleware)
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -59,7 +61,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = "trackly_backend.urls"
+ROOT_URLCONF = "logs.urls"
 
 # ------------------------------------------------------------
 # TEMPLATES
@@ -80,7 +82,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "trackly_backend.wsgi.application"
+WSGI_APPLICATION = "logs.wsgi.application"
 
 # ------------------------------------------------------------
 # DATABASE
