@@ -36,7 +36,7 @@ Deploy all three components (frontend, backend, and database) to cloud environme
 
 1. Setting up Render for database and backend deployment is reliable once environment variables are correctly configured. *(Junyi)*  
 2. Regular syncs between backend and database help ensure consistent schema understanding. *(Junyi)*
-3. Start work early. CORs for remote development between front and backend, file directories really matters
+3. Start work early. CORs for remote development between front and backend, file directories really matters *(Le)*
 
 ---
 
