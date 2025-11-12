@@ -13,7 +13,7 @@ Ensure the backend connects correctly to the external PostgreSQL database, and t
 
 ## Selected User Stories
 
-| Issue # | Title | Story Points | Assignees |
+| Issue | Title | Story Points | Assignees |
 |----------|--------|--------------|------------|
 | #1 | XXXXX | 5 | Le |
 | #2 | XXXXX | 8 | Le |
