@@ -19,7 +19,7 @@
 
 ## What Didn’t Go Well (minimum 2 items)
 
-1. XXXX
+1. Frontend and backend connection, request format and route not determined clearly *(Le)*
 2. XXXX
 
 ---
@@ -27,7 +27,7 @@
 ## What to improve (minimum 2 items with specific action items)
 
 1. xxx *(placeholder for improvement)*  
-   - **Action:** xxx  
+   - **Action:** What need to be set before work starts, e.g. route, request format  
    - **Due:** xxx
 
 ---
