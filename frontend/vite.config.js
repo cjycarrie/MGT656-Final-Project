@@ -10,8 +10,10 @@ export default defineConfig({
         target: 'https://trackly-3smc.onrender.com',
         changeOrigin: true,
         secure: true,
+        rewrite: (path) => path.replace(/^\/api/, ''), // ⬅️ remove /api prefix
       },
     },
   },
 })
+
 
