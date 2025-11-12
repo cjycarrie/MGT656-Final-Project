@@ -7,7 +7,7 @@ import sys
 def main():
     """Run administrative tasks."""
     # Use backend.settings as the default so manage.py matches the project's settings location
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "backend.settings")
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "logs.settings")
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:
