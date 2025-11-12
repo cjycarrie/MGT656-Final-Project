@@ -23,14 +23,14 @@ export default function LoginPage() {
     setMe(null);
 
     try {
-      // 1) Login via proxied path (no full origin needed)
-      const loginRes = await fetch(`/api/login/`, {
+      // 1️⃣ Call your backend directly
+      const loginRes = await fetch("https://trackly-3smc.onrender.com/login/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include", // in case backend uses session cookies
         body: JSON.stringify({ username, password }),
       });
 
+      // 2️⃣ Check if login was successful
       if (!loginRes.ok) {
         let msg = "Login failed.";
         try {
@@ -40,11 +40,15 @@ export default function LoginPage() {
         throw new Error(msg);
       }
 
-      // If backend returns tokens, stash them (harmless if absent)
+      // 3️⃣ Try to read JSON response (if any)
       let loginJson = null;
       try {
         loginJson = await loginRes.json();
       } catch (_) {}
+
+      console.log("Login response:", loginJson);
+
+      // 4️⃣ Optionally store tokens (if backend returns any)
       const access =
         loginJson?.access || loginJson?.token || loginJson?.access_token;
       const refresh =
@@ -52,19 +56,21 @@ export default function LoginPage() {
       if (access) localStorage.setItem("access", access);
       if (refresh) localStorage.setItem("refresh", refresh);
 
-      // 2) Fetch current user — adjust path if your backend uses a different one
-      const meRes = await fetch(`/api/me/`, {
-        credentials: "include",
+      // 5️⃣ (Optional) Fetch current user if backend has a /me/ route
+      // comment this out if your backend doesn't have a /me/ endpoint yet
+      const meRes = await fetch("https://trackly-3smc.onrender.com/me/", {
         headers: access ? { Authorization: `Bearer ${access}` } : undefined,
       });
 
-      if (!meRes.ok) {
-        throw new Error("Authenticated request failed (check /me/ path or CORS).");
+      if (meRes.ok) {
+        const meJson = await meRes.json();
+        setMe(meJson);
+      } else {
+        console.warn("No /me/ endpoint or user not returned.");
       }
 
-      const meJson = await meRes.json();
-      setMe(meJson);
     } catch (err) {
+      console.error(err);
       setError(err.message || "Something went wrong.");
     } finally {
       setLoading(false);
