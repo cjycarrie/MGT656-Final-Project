@@ -13,6 +13,7 @@ DEBUG = os.getenv('DEBUG', 'False') == 'True'
 ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
+    'corsheaders',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -21,6 +22,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -56,3 +58,8 @@ LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
 }
+
+# CORS - allow frontend to call API. For quick testing we allow all origins.
+# In production, set this to a list of allowed origins instead of True.
+CORS_ALLOW_ALL_ORIGINS = True
+
