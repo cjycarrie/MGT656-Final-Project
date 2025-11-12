@@ -23,28 +23,36 @@ async function handleLogin(e) {
   setMe(null);
 
   try {
-    const API = import.meta.env.VITE_API_URL; // https://trackly-3smc.onrender.com
+    const API = import.meta.env.VITE_API_URL; // should be https://trackly-3smc.onrender.com
     if (!API) throw new Error("Missing VITE_API_URL");
+
+    // Trim in case inputs have stray spaces
+    const u = username.trim();
+    const p = password.trim();
 
     const res = await fetch(`${API}/login/`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password }),
-      // no credentials: 'include' unless your backend uses cookies
+      body: JSON.stringify({ username: u, password: p }),
     });
 
+    // Read the response once; try to parse JSON
+    const raw = await res.text();
+    let data = null;
+    try { data = raw ? JSON.parse(raw) : null; } catch { /* non-JSON body */ }
+
+    console.log("LOGIN status:", res.status, "body:", data ?? raw);
+
     if (!res.ok) {
-      let msg = "Login failed.";
-      try {
-        const j = await res.json();
-        msg = j.detail || j.message || msg;
-      } catch {}
-      throw new Error(msg);
+      const serverMsg =
+        (data && (data.detail || data.message || data.error || data.status)) ||
+        raw ||
+        "Login failed.";
+      throw new Error(serverMsg);
     }
 
-    // Backend currently returns: { "status": "OK" }
-    // Treat that as success and show the user as logged in.
-    setMe({ username }); // or set a nicer “logged in” state
+    // Success (your curl showed {"status":"OK"})
+    setMe({ username: u });
     setError("");
   } catch (err) {
     setError(err.message || "Something went wrong.");
