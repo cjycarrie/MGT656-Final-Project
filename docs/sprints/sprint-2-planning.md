@@ -15,8 +15,8 @@ Ensure the backend connects correctly to the external PostgreSQL database, and t
 
 | Issue | Title | Story Points | Assignees |
 |----------|--------|--------------|------------|
-| #1 | XXXXX | 5 | Le |
-| #2 | XXXXX | 8 | Le |
+| #1 | Service deploys to Render, connects to remote Postgres | 5 | Le |
+| #2 | Provides a working /login/ endpoint and utilities for testing | 8 | Le |
 | #3 | XXXXX | 5 | Jingyi |
 | #4 | XXXXX | 8 | Jingyi |
 | #5 | Deploy PostgreSQL database on Render and provide connection to backend | 5 | Junyi |
@@ -30,7 +30,7 @@ Ensure the backend connects correctly to the external PostgreSQL database, and t
 
 | Member | Role | Key Responsibilities |
 |---------|------|----------------------|
-| Le | Backend Lead | xxxx |
+| Le | Backend Lead | Service deploys to Render, connects to remote Postgres, and provides a working /login/ endpoint and utilities for testing |
 | Jingyi | Frontend Lead | xxxx|
 | Junyi | Database | Set up Render PostgreSQL database, connect with backend, provide connection credentials, and verify test data. |
 
