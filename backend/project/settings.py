@@ -33,9 +33,19 @@ TEMPLATES = []
 WSGI_APPLICATION = 'project.wsgi.application'
 
 # Database
-DATABASES = {
-    'default': dj_database_url.parse(os.getenv('DATABASE_URL') or '')
-}
+DATABASE_URL = os.getenv('DATABASE_URL')
+if DATABASE_URL:
+    DATABASES = {
+        'default': dj_database_url.parse(DATABASE_URL)
+    }
+else:
+    # Fallback to a local sqlite DB for development/testing when DATABASE_URL is not set
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 # Static files
 STATIC_URL = '/static/'
