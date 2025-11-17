@@ -60,7 +60,9 @@ def login_view(request):
     if user is not None:
         # create session
         auth_login(request, user)
-        return JsonResponse({'status': 'OK'})
+        # expose session key in response for debugging so we can verify session creation
+        session_key = request.session.session_key
+        return JsonResponse({'status': 'OK', 'session_key': session_key})
     return JsonResponse({'status': 'invalid'}, status=401)
 
 
