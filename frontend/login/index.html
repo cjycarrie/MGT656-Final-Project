@@ -29,6 +29,14 @@
     </form>
   </div>
 
-  <script src="scripts.js"></script>
+  <script>
+    // Cache-bust for login script to ensure latest JS is loaded after deploys
+    (function(){
+      const s = document.createElement('script');
+      s.src = 'scripts.js?v=' + Date.now();
+      s.defer = true;
+      document.body.appendChild(s);
+    })();
+  </script>
 </body>
 </html>
