@@ -27,9 +27,9 @@ MIDDLEWARE = [
     # Request logging middleware logs each incoming request to stdout as JSON
     'core.middleware.request_logging.RequestLoggingMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
     'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
 ]
 
 ROOT_URLCONF = 'project.urls'
