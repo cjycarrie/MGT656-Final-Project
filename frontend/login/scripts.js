@@ -2,6 +2,23 @@ const form = document.getElementById('signin-form');
 const msgEl = document.getElementById('message');
 const btn = document.getElementById('loginBtn');
 
+const BASE = 'https://trackly-3smc.onrender.com';
+
+function getCookie(name) {
+  const value = document.cookie.split('; ').find(row => row.startsWith(name + '='));
+  return value ? decodeURIComponent(value.split('=')[1]) : null;
+}
+
+async function ensureCsrf() {
+  // Call the backend CSRF endpoint to set the csrftoken cookie (if not already set).
+  try {
+    await fetch(`${BASE}/csrf/`, { method: 'GET', credentials: 'include', mode: 'cors' });
+  } catch (e) {
+    // ignore network errors here; login will fail later with a network/CSRF error
+  }
+  return getCookie('csrftoken');
+}
+
 function showMessage(text) {
   if (msgEl) msgEl.textContent = text || '';
 }
@@ -22,9 +39,18 @@ if (form) {
       btn.disabled = true;
       btn.textContent = 'Signing in...';
 
-      const response = await fetch('https://trackly-3smc.onrender.com/login/', {
+      // Ensure CSRF cookie is set and include credentials so cookies are sent back and forth
+      const csrf = await ensureCsrf();
+
+      const response = await fetch(`${BASE}/login/`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        mode: 'cors',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrf || '',
+          'Referer': window.location.origin
+        },
         body: JSON.stringify({ username, password }),
       });
 
