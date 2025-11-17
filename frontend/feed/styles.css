@@ -1,0 +1,33 @@
+:root {
+  --accent: #7c3aed;
+  --muted: #6b7280;
+  --card-bg: #fff;
+}
+
+.container { max-width: 760px; margin: 0 auto; padding: 18px; }
+.feed-header { background: #fff; border-bottom: 1px solid #eee; }
+.feed-header .container { display:flex; align-items:center; gap:12px; }
+.logo { width:44px; height:auto; }
+.feed-header h1 { margin:0; font-size:20px; color:var(--accent); }
+.btn-link { margin-left:auto; color:var(--muted); text-decoration:none; }
+
+.feed-main { padding-top: 18px; }
+.composer { background: var(--card-bg); padding:12px; border-radius:10px; box-shadow:0 6px 20px rgba(2,6,23,0.04); margin-bottom:14px; }
+.input, .textarea { width:100%; padding:10px; border:1px solid #e6e9ef; border-radius:8px; margin-bottom:8px; }
+.textarea { min-height:80px; resize:vertical; }
+.composer-actions { display:flex; align-items:center; gap:10px; }
+.btn-primary { background:var(--accent); color:#fff; border:none; padding:8px 14px; border-radius:8px; cursor:pointer; }
+.btn-secondary { background:#fff; border:1px solid #e6e9ef; padding:8px 12px; border-radius:8px; cursor:pointer; }
+
+.feed-list .post { background:var(--card-bg); border-radius:12px; padding:12px; margin-bottom:12px; box-shadow:0 6px 20px rgba(2,6,23,0.04); border:1px solid #f0f2f5; }
+.post .meta { display:flex; gap:12px; align-items:center; }
+.post .author { font-weight:600; }
+.post .time { color:#9aa0a6; font-size:13px; }
+.post .body { margin-top:8px; color:#111827; }
+.post .actions { margin-top:10px; display:flex; gap:10px; align-items:center; }
+.like-btn { background:#fff; border:1px solid #eee; padding:6px 10px; border-radius:8px; cursor:pointer; }
+.like-btn.liked { color:var(--accent); border-color: rgba(124,58,237,0.2); }
+
+.feed-controls { text-align:center; margin:18px 0; }
+
+@media (max-width:520px) { .container { padding:12px; } }

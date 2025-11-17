@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Trackly — Feed</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50">
+  <header class="feed-header">
+    <div class="container">
+      <img src="../assets/Trackly.png" alt="Trackly" class="logo">
+      <h1>Feed</h1>
+      <a href="../index.html" class="btn-link">Logout</a>
+    </div>
+  </header>
+
+  <main class="container feed-main">
+    <section class="composer">
+      <input id="post-title" placeholder="Title (optional)" class="input" />
+      <textarea id="post-body" placeholder="What's on your mind?" class="textarea"></textarea>
+      <div class="composer-actions">
+        <button id="post-btn" class="btn-primary">Post</button>
+        <span id="composer-msg" class="text-sm text-red-600"></span>
+      </div>
+    </section>
+
+    <section id="feed" class="feed-list">
+      <!-- posts inserted here -->
+    </section>
+
+    <div class="feed-controls">
+      <button id="load-more" class="btn-secondary">Load more</button>
+      <span id="feed-msg" class="text-sm text-gray-500 ml-3"></span>
+    </div>
+  </main>
+
+  <script type="module" src="scripts.js"></script>
+</body>
+</html>
