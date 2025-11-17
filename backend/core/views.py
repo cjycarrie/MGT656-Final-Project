@@ -1,6 +1,6 @@
 import json
 from django.http import HttpResponse, JsonResponse
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from django.contrib.auth import authenticate, login as auth_login
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
@@ -15,7 +15,6 @@ def ok(request):
     return HttpResponse('OK')
 
 
-@csrf_exempt
 def login_view(request):
     """Simple POST login that authenticates against Django's auth system.
 
@@ -60,13 +59,10 @@ def login_view(request):
     if user is not None:
         # create session
         auth_login(request, user)
-        # expose session key in response for debugging so we can verify session creation
-        session_key = request.session.session_key
-        return JsonResponse({'status': 'OK', 'session_key': session_key})
+        return JsonResponse({'status': 'OK'})
     return JsonResponse({'status': 'invalid'}, status=401)
 
 
-@csrf_exempt
 @login_required
 def friends_posts(request):
     """Return posts from friends. Optional query: post_date=YYYY-MM-DD, page, page_size"""
@@ -117,7 +113,6 @@ def friends_posts(request):
     return JsonResponse({'results': results, 'page': page, 'page_size': page_size})
 
 
-@csrf_exempt
 @login_required
 def create_post(request):
     if request.method != 'POST':
@@ -148,7 +143,6 @@ def create_post(request):
         return JsonResponse({'detail': 'User has already posted today.'}, status=400)
 
 
-@csrf_exempt
 @login_required
 def like_post(request, post_id):
     if request.method != 'POST':
@@ -170,3 +164,13 @@ def like_post(request, post_id):
 
     likes_count = Like.objects.filter(post=post).count()
     return JsonResponse({'post_id': post.id, 'likes_count': likes_count, 'liked': liked})
+
+
+@ensure_csrf_cookie
+def csrf(request):
+    """Lightweight endpoint that ensures a CSRF cookie is set.
+
+    Frontend should call this with `credentials: 'include'` to obtain the
+    `csrftoken` cookie, then include the token in `X-CSRFToken` for POSTs.
+    """
+    return JsonResponse({}, status=204)

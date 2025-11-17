@@ -27,8 +27,9 @@ MIDDLEWARE = [
     # Request logging middleware logs each incoming request to stdout as JSON
     'core.middleware.request_logging.RequestLoggingMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
 ]
 
 ROOT_URLCONF = 'project.urls'
@@ -85,28 +86,32 @@ LOGGING = {
     },
 }
 
-# CORS - allow frontend to call API. For quick testing we allow all origins.
-# In production, set this to a list of allowed origins instead of True.
-# Allow localhost dev frontend and allow credentials
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
-    # add other allowed origins here, e.g. "https://your-production-frontend.com"
-]
-CORS_ALLOW_ALL_ORIGINS = True
-
-
-# Session / Cookie settings (temporary relaxation for debugging)
-# In production ensure SESSION_COOKIE_SECURE=True and proper SameSite as needed.
-SESSION_COOKIE_AGE = 60 * 60 * 24 * 14  # 14 days
-SESSION_EXPIRE_AT_BROWSER_CLOSE = False
-SESSION_COOKIE_SECURE = False
-SESSION_COOKIE_SAMESITE = 'Lax'
-CSRF_COOKIE_SECURE = False
-CSRF_COOKIE_SAMESITE = 'Lax'
-CORS_ALLOW_CREDENTIALS = True
+# CORS - allow frontend to call API.
+# For development we allow all origins; in production we only allow configured origins.
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "https://trackly-music.onrender.com",
 ]
+# Allow all origins only in DEBUG for convenience
+CORS_ALLOW_ALL_ORIGINS = DEBUG
+
+
+# Session / Cookie settings
+SESSION_COOKIE_AGE = 60 * 60 * 24 * 14  # 14 days
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+# Secure cookie settings: in production we require Secure + SameSite=None for cross-site
+if DEBUG:
+    SESSION_COOKIE_SECURE = False
+    SESSION_COOKIE_SAMESITE = 'Lax'
+    CSRF_COOKIE_SECURE = False
+    CSRF_COOKIE_SAMESITE = 'Lax'
+else:
+    SESSION_COOKIE_SECURE = True
+    SESSION_COOKIE_SAMESITE = 'None'
+    CSRF_COOKIE_SECURE = True
+    CSRF_COOKIE_SAMESITE = 'None'
+
+# Allow credentials for cross-origin requests (frontend must use fetch credentials:'include')
+CORS_ALLOW_CREDENTIALS = True
 
 
