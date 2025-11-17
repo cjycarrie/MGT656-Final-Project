@@ -14,13 +14,19 @@ function getCookie(name) {
 }
 
 export async function getCsrfToken() {
-  await fetch(`${BASE}/csrf/`, {
-    method: 'GET',
-    credentials: 'include',
-    mode: 'cors'
-  });
+  // Prefer the JSON endpoint which returns the token. This works when the
+  // frontend is on a different origin and cannot read the backend cookie.
+  try {
+    const res = await fetch(`${BASE}/csrf-token/`, { method: 'GET', credentials: 'include', mode: 'cors' });
+    if (res.ok) {
+      const data = await res.json().catch(() => null);
+      if (data && data.csrftoken) return data.csrftoken;
+    }
+  } catch (e) {
+    // fallback to cookie read (may be null on cross-origin)
+  }
   const token = getCookie('csrftoken');
-  return token; // may be null if cookie not readable by this origin
+  return token;
 }
 
 export async function login(username, password) {
@@ -63,9 +69,11 @@ export async function fetchFriendsPosts(page = 1, pageSize = 20) {
   return data;
 }
 
-export async function createPost(title, body) {
+export async function createPost(song_title, artist_name = '', spotify_url = null, caption = '') {
+  // Backend expects: song_title, artist_name, spotify_url, caption
   let token = getCookie('csrftoken');
   if (!token) token = await getCsrfToken();
+  const payload = { song_title, artist_name, spotify_url, caption };
   const res = await fetch(`${BASE}/posts/`, {
     method: 'POST',
     credentials: 'include',
@@ -75,7 +83,7 @@ export async function createPost(title, body) {
       'X-CSRFToken': token || '',
       'Referer': window.location.origin
     },
-    body: JSON.stringify({ title, body })
+    body: JSON.stringify(payload)
   });
   const ct = res.headers.get('Content-Type') || '';
   const data = ct.includes('application/json') ? await res.json() : await res.text();

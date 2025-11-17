@@ -10,13 +10,19 @@ function getCookie(name) {
 }
 
 async function ensureCsrf() {
-  // Call the backend CSRF endpoint to set the csrftoken cookie (if not already set).
+  // For cross-origin frontends we cannot read the backend cookie via
+  // `document.cookie`. Call the backend JSON endpoint which returns the
+  // token and also ensures the cookie is set.
   try {
-    await fetch(`${BASE}/csrf/`, { method: 'GET', credentials: 'include', mode: 'cors' });
+    const res = await fetch(`${BASE}/csrf-token/`, { method: 'GET', credentials: 'include', mode: 'cors' });
+    if (res.ok) {
+      const data = await res.json().catch(() => null);
+      if (data && data.csrftoken) return data.csrftoken;
+    }
   } catch (e) {
-    // ignore network errors here; login will fail later with a network/CSRF error
+    // ignore network errors; caller will handle errors
   }
-  return getCookie('csrftoken');
+  return null;
 }
 
 function showMessage(text) {
