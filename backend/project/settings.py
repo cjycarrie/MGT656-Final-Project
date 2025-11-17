@@ -27,6 +27,7 @@ MIDDLEWARE = [
     # Request logging middleware logs each incoming request to stdout as JSON
     'core.middleware.request_logging.RequestLoggingMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.middleware.common.CommonMiddleware',
 ]
 
