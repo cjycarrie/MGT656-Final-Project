@@ -1,14 +1,13 @@
 import json
 from django.http import HttpResponse, JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth import authenticate
+from django.views.decorators.csrf import ensure_csrf_cookie
+from django.contrib.auth import authenticate, login as auth_login
 
 
 def ok(request):
     return HttpResponse('OK')
 
 
-@csrf_exempt
 def login_view(request):
     """Simple POST login that authenticates against Django's auth system.
 
@@ -51,5 +50,13 @@ def login_view(request):
 
     user = authenticate(username=username, password=password)
     if user is not None:
+        # Create a session for the authenticated user
+        auth_login(request, user)
         return JsonResponse({'status': 'OK'})
     return JsonResponse({'status': 'invalid'}, status=401)
+
+
+@ensure_csrf_cookie
+def csrf(request):
+    """Sets a CSRFTOKEN cookie (204 No Content). Call this from the frontend before POSTs."""
+    return HttpResponse(status=204)
