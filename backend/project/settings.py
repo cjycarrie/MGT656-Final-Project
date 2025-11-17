@@ -27,6 +27,8 @@ MIDDLEWARE = [
     # Request logging middleware logs each incoming request to stdout as JSON
     'core.middleware.request_logging.RequestLoggingMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
     'django.middleware.common.CommonMiddleware',
 ]
 
@@ -92,5 +94,14 @@ CORS_ALLOWED_ORIGINS = [
     # add other allowed origins here, e.g. "https://your-production-frontend.com"
 ]
 CORS_ALLOW_ALL_ORIGINS = True
+
+# Allow credentials (cookies) to be sent cross-origin
+CORS_ALLOW_CREDENTIALS = True
+
+# Trusted origins for Django's CSRF when receiving cross-origin POSTs
+# Must include the exact scheme + host of the frontend
+CSRF_TRUSTED_ORIGINS = [
+    "https://trackly-music.onrender.com",
+]
 
 
