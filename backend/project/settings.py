@@ -27,9 +27,9 @@ MIDDLEWARE = [
     # Request logging middleware logs each incoming request to stdout as JSON
     'core.middleware.request_logging.RequestLoggingMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.middleware.common.CommonMiddleware',
 ]
 
 ROOT_URLCONF = 'project.urls'
@@ -113,5 +113,15 @@ else:
 
 # Allow credentials for cross-origin requests (frontend must use fetch credentials:'include')
 CORS_ALLOW_CREDENTIALS = True
+# Allow credentials (cookies) to be sent cross-origin
+CORS_ALLOW_CREDENTIALS = True
+# Allow credentials for cross-origin requests (frontend must use fetch credentials:'include')
+CORS_ALLOW_CREDENTIALS = True
+
+# Trusted origins for Django's CSRF when receiving cross-origin POSTs
+# Must include the exact scheme + host of the frontend
+CSRF_TRUSTED_ORIGINS = [
+    "https://trackly-music.onrender.com",
+]
 
 

@@ -1,0 +1,18 @@
+.input-box {
+  width: 320px;
+  padding: 14px;
+  margin-top: 14px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+}
+
+.btn-primary {
+  margin-top: 24px;
+  width: 320px;
+  padding: 14px;
+  background-color: #3b0d8b;
+  color: white;
+  border-radius: 8px;
+  font-weight: 600;
+}
+ 

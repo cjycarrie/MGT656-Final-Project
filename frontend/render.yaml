@@ -1,0 +1,7 @@
+staticSites:
+  - name: trackly-frontend
+    branch: main
+    # publish the static files from this frontend folder (root set to current directory)
+    root: .
+    buildCommand: ""
+    envVars: []
