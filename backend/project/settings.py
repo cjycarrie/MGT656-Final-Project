@@ -95,3 +95,18 @@ CORS_ALLOWED_ORIGINS = [
 CORS_ALLOW_ALL_ORIGINS = True
 
 
+# Session / Cookie settings (temporary relaxation for debugging)
+# In production ensure SESSION_COOKIE_SECURE=True and proper SameSite as needed.
+SESSION_COOKIE_AGE = 60 * 60 * 24 * 14  # 14 days
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+SESSION_COOKIE_SECURE = False
+SESSION_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_SECURE = False
+CSRF_COOKIE_SAMESITE = 'Lax'
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+    "https://trackly-music.onrender.com",
+]
+
+
