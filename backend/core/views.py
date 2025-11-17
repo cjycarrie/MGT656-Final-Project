@@ -6,6 +6,9 @@ from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
 from django.shortcuts import get_object_or_404
 from django.middleware.csrf import get_token
+from django.http import FileResponse, HttpResponseNotFound
+import mimetypes
+from pathlib import Path
 
 from .models import Post, Like, Friendship
 from django.db.models import Count, Exists, OuterRef
@@ -183,4 +186,27 @@ def csrf_token(request):
     """
     token = get_token(request)
     return JsonResponse({'csrftoken': token})
+
+
+def serve_frontend(request, path=''):
+    """Serve files from the repository's `frontend/` folder under `/site/`.
+
+    This is a minimal static file server intended for simple deployments where
+    you want the backend and frontend on the same origin. It is not a full
+    production CDN but works for small apps and for Render deployments.
+    """
+    # Compute frontend directory: workspace root /frontend
+    backend_dir = Path(__file__).resolve().parent.parent
+    frontend_dir = backend_dir.parent / 'frontend'
+
+    # Default to index.html when no path provided or path is a directory
+    if not path or path.endswith('/'):
+        path = 'index.html'
+
+    file_path = frontend_dir / path
+    if not file_path.exists() or not file_path.is_file():
+        return HttpResponseNotFound('Not found')
+
+    content_type, _ = mimetypes.guess_type(str(file_path))
+    return FileResponse(open(file_path, 'rb'), content_type=content_type or 'application/octet-stream')
 

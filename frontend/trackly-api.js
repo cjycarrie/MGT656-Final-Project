@@ -6,7 +6,12 @@ Pagination: `fetchFriendsPosts(page, pageSize)` supports page param (defaults: p
 CSRF: tries cookie first, then calls /csrf/ to set cookie; backend will include your origin in CORS.
 */
 
-const BASE = 'https://trackly-3smc.onrender.com';
+// Use the same-origin API by default when running in a browser (so cookies
+// and sessions work). If you need to override, you can set
+// `window.TRACKLY_API_BASE` before this script loads.
+const BASE = (typeof window !== 'undefined' && window.TRACKLY_API_BASE)
+  ? window.TRACKLY_API_BASE
+  : (typeof window !== 'undefined' ? window.location.origin : 'https://trackly-3smc.onrender.com');
 
 function getCookie(name) {
   const value = document.cookie.split('; ').find(row => row.startsWith(name + '='));
