@@ -63,6 +63,15 @@ if (form) {
       }
 
       const data = await response.json().catch(() => null);
+      // After login the backend may rotate the CSRF token. Ensure we fetch
+      // the latest csrftoken cookie before navigating so subsequent POSTs
+      // use the up-to-date token.
+      try {
+        await ensureCsrf();
+      } catch (e) {
+        // ignore: even if refresh fails, we still navigate; frontend code
+        // will attempt to call /csrf/ on next state-changing requests.
+      }
       localStorage.setItem('user', JSON.stringify(data || {}));
       window.location.href = '../profile/index.html';
     } catch (err) {
