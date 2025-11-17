@@ -20,13 +20,13 @@ function renderPost(post) {
   const div = document.createElement('div');
   div.className = 'post';
   div.dataset.id = post.id;
-  const liked = !!post.liked_by_user;
+  const liked = !!post.liked_by_me;
   div.innerHTML = `
     <div class="meta">
-      <div class="author">${post.author?.display_name || post.author?.username || 'User'}</div>
+      <div class="author">${post.author_username || post.author?.display_name || post.author?.username || 'User'}</div>
       <div class="time">${formatTime(post.created_at)}</div>
     </div>
-    <div class="body">${post.title ? `<strong>${escapeHtml(post.title)}</strong><br/>` : ''}${escapeHtml(post.body || '')}</div>
+    <div class="body">${post.song_title ? `<strong>${escapeHtml(post.song_title)}</strong> — ${escapeHtml(post.artist_name || '')}<br/>` : ''}${escapeHtml(post.caption || '')}</div>
     <div class="actions">
       <button class="like-btn ${liked? 'liked':''}">❤ <span class="likes-count">${post.likes_count || 0}</span></button>
     </div>
@@ -65,25 +65,25 @@ async function loadPosts() {
 async function handleLike(post, postEl) {
   const likeBtn = postEl.querySelector('.like-btn');
   const countEl = postEl.querySelector('.likes-count');
-  const prevLiked = !!post.liked_by_user;
+  const prevLiked = !!post.liked_by_me;
   const prevCount = Number(post.likes_count || 0);
-  post.liked_by_user = !prevLiked;
+  post.liked_by_me = !prevLiked;
   post.likes_count = prevLiked ? Math.max(0, prevCount-1) : prevCount+1;
-  likeBtn.classList.toggle('liked', post.liked_by_user);
+  likeBtn.classList.toggle('liked', post.liked_by_me);
   countEl.textContent = String(post.likes_count);
   try {
     const res = await Trackly.likePost(post.id);
     if (res && typeof res.likes_count !== 'undefined') {
       post.likes_count = res.likes_count;
-      post.liked_by_user = !!res.liked;
+      post.liked_by_me = !!res.liked;
       countEl.textContent = String(post.likes_count);
-      likeBtn.classList.toggle('liked', post.liked_by_user);
+      likeBtn.classList.toggle('liked', post.liked_by_me);
     }
   } catch (err) {
     console.error('Like failed', err);
-    post.liked_by_user = prevLiked;
+    post.liked_by_me = prevLiked;
     post.likes_count = prevCount;
-    likeBtn.classList.toggle('liked', post.liked_by_user);
+    likeBtn.classList.toggle('liked', post.liked_by_me);
     countEl.textContent = String(post.likes_count);
     alert('Failed to like post.');
   }
@@ -96,7 +96,7 @@ postBtn.addEventListener('click', async () => {
   if (!body) { composerMsg.textContent = 'Please write something.'; return; }
   postBtn.disabled = true; postBtn.textContent = 'Posting...';
   try {
-    const created = await Trackly.createPost(title || null, body);
+    const created = await Trackly.createPost(title || null, '', null, body);
     feedEl.insertBefore(renderPost(created), feedEl.firstChild);
     titleInput.value = '';
     bodyInput.value = '';
