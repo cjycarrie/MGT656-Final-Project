@@ -2,6 +2,7 @@ import json
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.contrib.auth import authenticate, login as auth_login
+from django.middleware.csrf import get_token
 
 
 def ok(request):
@@ -60,3 +61,12 @@ def login_view(request):
 def csrf(request):
     """Sets a CSRFTOKEN cookie (204 No Content). Call this from the frontend before POSTs."""
     return HttpResponse(status=204)
+
+
+def csrf_token(request):
+    """Return CSRF token in JSON. Frontend should call with `credentials: 'include'`.
+
+    This is a helper for cross-origin frontends that cannot read the cookie directly.
+    """
+    token = get_token(request)
+    return JsonResponse({'csrftoken': token})
