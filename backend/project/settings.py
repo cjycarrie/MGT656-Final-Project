@@ -22,7 +22,6 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'core.middleware.token_auth.TokenAuthMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     # Request logging middleware logs each incoming request to stdout as JSON
@@ -31,6 +30,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'core.middleware.token_auth.TokenAuthMiddleware',
 ]
 
 ROOT_URLCONF = 'project.urls'
