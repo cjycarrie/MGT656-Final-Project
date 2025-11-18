@@ -229,10 +229,13 @@ def token_login(request):
     # Build token
     now = datetime.utcnow()
     exp = now + timedelta(days=14)
+    # Set iat slightly in the past to avoid "token not yet valid (iat)" when
+    # there is minor clock skew between services.
+    issued_at = now - timedelta(seconds=1)
     token_payload = {
         'user_id': user.id,
         'exp': int(exp.timestamp()),
-        'iat': int(now.timestamp()),
+        'iat': int(issued_at.timestamp()),
     }
     token = jwt.encode(token_payload, settings.SECRET_KEY, algorithm='HS256')
     return JsonResponse({'token': token, 'user': {'id': user.id, 'username': user.username}})
