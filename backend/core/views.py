@@ -236,7 +236,6 @@ def token_login(request):
     token_payload = {
         'user_id': user.id,
         'exp': int(exp.timestamp()),
-        'iat': int(issued_at.timestamp()),
     }
     token = jwt.encode(token_payload, settings.SECRET_KEY, algorithm='HS256')
     return JsonResponse({'token': token, 'user': {'id': user.id, 'username': user.username}})
