@@ -109,18 +109,28 @@ export async function createPost(song_title, artist_name = '', spotify_url = nul
   return data;
 }
 
-export async function likePost(postId) {
-  let token = getCookie('csrftoken');
-  if (!token) token = await getCsrfToken();
+export async function likePost(postId, action = null) {
+  // Prefer JWT token in localStorage for cross-origin use; fallback to CSRF/session.
+  const jwt = (typeof window !== 'undefined') ? window.localStorage.getItem('trackly_token') : null;
+  let headers = { 'Content-Type': 'application/json', 'Referer': (typeof window !== 'undefined') ? window.location.origin : '' };
+  let credentials = 'include';
+  if (jwt) {
+    headers['Authorization'] = 'Bearer ' + jwt;
+    credentials = 'omit';
+  } else {
+    const csrf = getCookie('csrftoken') || await getCsrfToken();
+    headers['X-CSRFToken'] = csrf || '';
+    credentials = 'include';
+  }
+
+  const body = action ? JSON.stringify({ action }) : JSON.stringify({});
+
   const res = await fetch(`${BASE}/posts/${postId}/like/`, {
     method: 'POST',
-    credentials: token ? 'omit' : 'include',
+    credentials: credentials,
     mode: 'cors',
-    headers: (function(){
-      const h = {'Content-Type': 'application/json', 'Referer': window.location.origin};
-      if (token) h['Authorization'] = 'Bearer ' + token;
-      return h;
-    })()
+    headers,
+    body,
   });
   const ct = res.headers.get('Content-Type') || '';
   const data = ct.includes('application/json') ? await res.json() : await res.text();

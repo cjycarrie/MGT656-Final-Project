@@ -28,11 +28,14 @@ function renderPost(post) {
     </div>
     <div class="body">${post.song_title ? `<strong>${escapeHtml(post.song_title)}</strong> — ${escapeHtml(post.artist_name || '')}<br/>` : ''}${escapeHtml(post.caption || '')}</div>
     <div class="actions">
-      <button class="like-btn ${liked? 'liked':''}">❤ <span class="likes-count">${post.likes_count || 0}</span></button>
+      <button class="like-btn mr-2 px-3 py-1 rounded bg-gray-100 text-gray-700" style="display: ${liked ? 'none' : 'inline-block'}">❤ <span class="likes-count">${post.likes_count || 0}</span> Like</button>
+      <button class="unlike-btn mr-2 px-3 py-1 rounded bg-red-100 text-red-600" style="display: ${liked ? 'inline-block' : 'none'}">❤ <span class="likes-count">${post.likes_count || 0}</span> Unlike</button>
     </div>
   `;
   const likeBtn = div.querySelector('.like-btn');
+  const unlikeBtn = div.querySelector('.unlike-btn');
   likeBtn.addEventListener('click', () => handleLike(post, div));
+  unlikeBtn.addEventListener('click', () => handleUnlike(post, div));
   return div;
 }
 
@@ -64,28 +67,67 @@ async function loadPosts() {
 
 async function handleLike(post, postEl) {
   const likeBtn = postEl.querySelector('.like-btn');
+  const unlikeBtn = postEl.querySelector('.unlike-btn');
   const countEl = postEl.querySelector('.likes-count');
   const prevLiked = !!post.liked_by_me;
   const prevCount = Number(post.likes_count || 0);
-  post.liked_by_me = !prevLiked;
-  post.likes_count = prevLiked ? Math.max(0, prevCount-1) : prevCount+1;
-  likeBtn.classList.toggle('liked', post.liked_by_me);
+  // Optimistic update: show liked state
+  post.liked_by_me = true;
+  post.likes_count = prevCount + 1;
+  likeBtn.style.display = 'none';
+  unlikeBtn.style.display = 'inline-block';
   countEl.textContent = String(post.likes_count);
   try {
-    const res = await Trackly.likePost(post.id);
+    const res = await Trackly.likePost(post.id, null);
     if (res && typeof res.likes_count !== 'undefined') {
       post.likes_count = res.likes_count;
       post.liked_by_me = !!res.liked;
       countEl.textContent = String(post.likes_count);
-      likeBtn.classList.toggle('liked', post.liked_by_me);
+      likeBtn.style.display = post.liked_by_me ? 'none' : 'inline-block';
+      unlikeBtn.style.display = post.liked_by_me ? 'inline-block' : 'none';
     }
   } catch (err) {
     console.error('Like failed', err);
+    // Revert optimistic UI on error
     post.liked_by_me = prevLiked;
     post.likes_count = prevCount;
-    likeBtn.classList.toggle('liked', post.liked_by_me);
+    likeBtn.style.display = prevLiked ? 'none' : 'inline-block';
+    unlikeBtn.style.display = prevLiked ? 'inline-block' : 'none';
     countEl.textContent = String(post.likes_count);
     alert('Failed to like post.');
+  }
+}
+
+async function handleUnlike(post, postEl) {
+  const likeBtn = postEl.querySelector('.like-btn');
+  const unlikeBtn = postEl.querySelector('.unlike-btn');
+  const countEl = postEl.querySelector('.likes-count');
+  const prevLiked = !!post.liked_by_me;
+  const prevCount = Number(post.likes_count || 0);
+  // Optimistic update: show unliked state
+  post.liked_by_me = false;
+  post.likes_count = Math.max(0, prevCount - 1);
+  likeBtn.style.display = 'inline-block';
+  unlikeBtn.style.display = 'none';
+  countEl.textContent = String(post.likes_count);
+  try {
+    const res = await Trackly.likePost(post.id, 'unlike');
+    if (res && typeof res.likes_count !== 'undefined') {
+      post.likes_count = res.likes_count;
+      post.liked_by_me = !!res.liked;
+      countEl.textContent = String(post.likes_count);
+      likeBtn.style.display = post.liked_by_me ? 'none' : 'inline-block';
+      unlikeBtn.style.display = post.liked_by_me ? 'inline-block' : 'none';
+    }
+  } catch (err) {
+    console.error('Unlike failed', err);
+    // revert
+    post.liked_by_me = prevLiked;
+    post.likes_count = prevCount;
+    likeBtn.style.display = prevLiked ? 'none' : 'inline-block';
+    unlikeBtn.style.display = prevLiked ? 'inline-block' : 'none';
+    countEl.textContent = String(post.likes_count);
+    alert('Failed to unlike post.');
   }
 }
 
