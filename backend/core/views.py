@@ -75,7 +75,9 @@ def login_view(request):
 @csrf_exempt
 def friends_posts(request):
     """Return posts from friends. Optional query: post_date=YYYY-MM-DD, page, page_size"""
-    user = request.user
+    user = getattr(request, 'user', None)
+    if not user or getattr(user, 'is_anonymous', True):
+        return JsonResponse({'detail': 'authentication required'}, status=401)
     date_param = request.GET.get('post_date')
     filter_date = None
     if date_param:
@@ -126,6 +128,9 @@ def friends_posts(request):
 def create_post(request):
     if request.method != 'POST':
         return JsonResponse({'detail': 'method not allowed'}, status=405)
+    user = getattr(request, 'user', None)
+    if not user or getattr(user, 'is_anonymous', True):
+        return JsonResponse({'detail': 'authentication required'}, status=401)
     try:
         data = json.loads(request.body.decode('utf-8') or '{}')
     except Exception:
@@ -155,6 +160,9 @@ def create_post(request):
 def like_post(request, post_id):
     if request.method != 'POST':
         return JsonResponse({'detail': 'method not allowed'}, status=405)
+    user = getattr(request, 'user', None)
+    if not user or getattr(user, 'is_anonymous', True):
+        return JsonResponse({'detail': 'authentication required'}, status=401)
     post = get_object_or_404(Post, id=post_id)
     action = None
     try:

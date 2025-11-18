@@ -23,12 +23,18 @@ class TokenAuthMiddleware:
                     User = get_user_model()
                     try:
                         user = User.objects.get(pk=user_id)
+                        # Set both request.user and the cached user used by
+                        # AuthenticationMiddleware to avoid SimpleLazyObject
+                        # wrappers causing ORM lookups to receive a lazy proxy.
                         request.user = user
+                        try:
+                            request._cached_user = user
+                        except Exception:
+                            pass
                     except User.DoesNotExist:
                         pass
             except Exception:
-                # invalid token -> ignore and continue (request.user will be
-                # whatever AuthenticationMiddleware sets later)
+                # invalid token -> ignore and continue
                 pass
 
         response = self.get_response(request)
