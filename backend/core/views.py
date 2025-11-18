@@ -365,3 +365,21 @@ def auth_check_debug(request):
             out[u] = {'can_authenticate_with_123456': False, 'error': str(exc)[:200]}
     return JsonResponse(out)
 
+
+def me(request):
+    """Return basic info about the currently authenticated user.
+
+    Frontend can call this with `credentials: 'include'` to populate localStorage
+    when using session-based auth.
+    """
+    user = getattr(request, 'user', None)
+    if not user or getattr(user, 'is_anonymous', True):
+        return JsonResponse({'detail': 'authentication required'}, status=401)
+    data = {
+        'id': user.id,
+        'username': getattr(user, 'username', None),
+        'email': getattr(user, 'email', None),
+        'name': ' '.join(filter(None, [getattr(user, 'first_name', ''), getattr(user, 'last_name', '')])).strip(),
+    }
+    return JsonResponse({'user': data})
+
