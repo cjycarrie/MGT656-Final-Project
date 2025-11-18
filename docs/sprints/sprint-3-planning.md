@@ -7,7 +7,7 @@
 ---
 
 ## Sprint Goal
-Added user-facing social features — authentication flow with profile redirect, quick link setup, and endpoints for posts, likes, and friend feeds.
+Added user-facing social features — authentication flow with profile redirect, shell for post, quick link setup, and endpoints for posts, likes, and friend feeds.
 
 ## Selected User Stories from Backlog
 
