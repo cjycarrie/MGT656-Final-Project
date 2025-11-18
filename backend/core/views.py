@@ -6,6 +6,11 @@ from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
 from django.shortcuts import get_object_or_404
 from django.middleware.csrf import get_token
+from django.views.decorators.csrf import csrf_exempt
+import jwt
+from datetime import datetime, timedelta
+from django.contrib.auth import get_user_model
+from django.conf import settings
 from django.http import FileResponse, HttpResponseNotFound
 import mimetypes
 from pathlib import Path
@@ -67,7 +72,7 @@ def login_view(request):
     return JsonResponse({'status': 'invalid'}, status=401)
 
 
-@login_required
+@csrf_exempt
 def friends_posts(request):
     """Return posts from friends. Optional query: post_date=YYYY-MM-DD, page, page_size"""
     user = request.user
@@ -117,7 +122,7 @@ def friends_posts(request):
     return JsonResponse({'results': results, 'page': page, 'page_size': page_size})
 
 
-@login_required
+@csrf_exempt
 def create_post(request):
     if request.method != 'POST':
         return JsonResponse({'detail': 'method not allowed'}, status=405)
@@ -146,7 +151,7 @@ def create_post(request):
         return JsonResponse({'detail': 'User has already posted today.'}, status=400)
 
 
-@login_required
+@csrf_exempt
 def like_post(request, post_id):
     if request.method != 'POST':
         return JsonResponse({'detail': 'method not allowed'}, status=405)
@@ -186,6 +191,43 @@ def csrf_token(request):
     """
     token = get_token(request)
     return JsonResponse({'csrftoken': token})
+
+
+@csrf_exempt
+def token_login(request):
+    """Token-based login: accepts JSON {username, password} and returns JWT.
+
+    This endpoint is CSRF-exempt because it is intended for use by cross-origin
+    frontends that will authenticate using the returned token in the
+    Authorization header for subsequent requests.
+    """
+    if request.method != 'POST':
+        return JsonResponse({'detail': 'method not allowed'}, status=405)
+
+    try:
+        payload = json.loads(request.body.decode('utf-8') or '{}')
+    except Exception:
+        return JsonResponse({'detail': 'invalid json'}, status=400)
+
+    username = payload.get('username')
+    password = payload.get('password')
+    if not username or not password:
+        return JsonResponse({'detail': 'username and password required'}, status=400)
+
+    user = authenticate(username=username, password=password)
+    if user is None:
+        return JsonResponse({'detail': 'invalid credentials'}, status=401)
+
+    # Build token
+    now = datetime.utcnow()
+    exp = now + timedelta(days=14)
+    token_payload = {
+        'user_id': user.id,
+        'exp': int(exp.timestamp()),
+        'iat': int(now.timestamp()),
+    }
+    token = jwt.encode(token_payload, settings.SECRET_KEY, algorithm='HS256')
+    return JsonResponse({'token': token, 'user': {'id': user.id, 'username': user.username}})
 
 
 def serve_frontend(request, path=''):
