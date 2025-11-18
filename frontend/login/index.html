@@ -30,6 +30,8 @@
   </div>
 
   <script>
+    // Use backend same-origin API base
+    window.TRACKLY_API_BASE = window.location.origin + '/api';
     // Cache-bust for login script to ensure latest JS is loaded after deploys
     (function(){
       const s = document.createElement('script');

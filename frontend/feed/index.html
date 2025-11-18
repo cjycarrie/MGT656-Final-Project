@@ -37,5 +37,9 @@
   </main>
 
   <script type="module" src="scripts.js"></script>
+  <script>
+    // Ensure API base points to backend same-origin + /api
+    window.TRACKLY_API_BASE = window.location.origin + '/api';
+  </script>
 </body>
 </html>

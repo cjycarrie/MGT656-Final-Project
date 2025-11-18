@@ -263,3 +263,29 @@ def serve_frontend(request, path=''):
     content_type, _ = mimetypes.guess_type(str(file_path))
     return FileResponse(open(file_path, 'rb'), content_type=content_type or 'application/octet-stream')
 
+
+@csrf_exempt
+def token_debug(request):
+    """Temporary debug endpoint: show whether Authorization header arrived
+    and whether the token can be decoded by the server. This is safe for
+    debugging because it does NOT echo back the token itself; it only
+    returns whether a token was present and a short decode result.
+    """
+    auth = request.META.get('HTTP_AUTHORIZATION', '')
+    has_auth = bool(auth and auth.lower().startswith('bearer '))
+    result = {'auth_header': has_auth}
+    if not has_auth:
+        return JsonResponse(result)
+
+    token = auth.split(None, 1)[1].strip()
+    try:
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'], leeway=10)
+        # Only include small, non-sensitive pieces of payload
+        result['token_decode'] = 'ok'
+        result['user_id'] = payload.get('user_id')
+    except Exception as exc:
+        result['token_decode'] = 'error'
+        result['token_error'] = str(exc)[:512]
+
+    return JsonResponse(result)
+

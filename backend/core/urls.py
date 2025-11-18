@@ -10,7 +10,5 @@ urlpatterns = [
     path('posts/friends/', views.friends_posts),
     path('posts/', views.create_post),
     path('posts/<int:post_id>/like/', views.like_post),
-    # Serve the compiled frontend under /site/
-    path('site/', views.serve_frontend),
-    path('site/<path:path>', views.serve_frontend),
+    path('debug/token-check/', views.token_debug),
 ]
