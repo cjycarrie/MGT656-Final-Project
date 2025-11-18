@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trackly – New Post</title>
+  <link rel="stylesheet" href="../profile/styles.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style> .container { max-width: 680px; margin: 40px auto; }</style>
+</head>
+<body class="bg-white">
+  <main class="container">
+    <a href="../profile/index.html" class="text-sm text-gray-500 mb-4 inline-block">← Back to profile</a>
+    <div class="profile-card">
+      <h2 class="text-2xl font-semibold text-purple-800 px-6 mb-4">Create a Post</h2>
+      <form id="post-form">
+        <div class="mb-3">
+          <input id="song_title" placeholder="Song title" class="w-full p-2 border rounded" />
+        </div>
+        <div class="mb-3">
+          <input id="artist_name" placeholder="Artist" class="w-full p-2 border rounded" />
+        </div>
+        <div class="mb-3">
+          <input id="spotify_url" placeholder="Spotify URL (optional)" class="w-full p-2 border rounded" />
+        </div>
+        <div class="mb-3">
+          <textarea id="caption" placeholder="Caption (optional)" class="w-full p-2 border rounded" rows="4"></textarea>
+        </div>
+        <div class="flex justify-end">
+          <button id="postBtn" type="submit" class="px-4 py-2 bg-purple-600 text-white rounded">Post</button>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <script>
+    window.TRACKLY_API_BASE = window.location.origin + '/api';
+  </script>
+  <script type="module" src="scripts.js"></script>
+</body>
+</html>
