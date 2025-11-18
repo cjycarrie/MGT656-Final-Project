@@ -230,8 +230,9 @@ def token_login(request):
     now = datetime.utcnow()
     exp = now + timedelta(days=14)
     # Set iat slightly in the past to avoid "token not yet valid (iat)" when
-    # there is minor clock skew between services.
-    issued_at = now - timedelta(seconds=1)
+    # there is minor clock skew between services. Use a larger backdate to be
+    # tolerant of small clock differences between hosts.
+    issued_at = now - timedelta(seconds=10)
     token_payload = {
         'user_id': user.id,
         'exp': int(exp.timestamp()),
@@ -279,7 +280,7 @@ def token_debug(request):
 
     token = auth.split(None, 1)[1].strip()
     try:
-        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'], leeway=10)
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'], leeway=60)
         # Only include small, non-sensitive pieces of payload
         result['token_decode'] = 'ok'
         result['user_id'] = payload.get('user_id')

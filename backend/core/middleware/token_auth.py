@@ -27,7 +27,7 @@ class TokenAuthMiddleware:
                 token = auth.split(None, 1)[1].strip()
                 try:
                     # Allow a small leeway to account for minor clock skew
-                    payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'], leeway=10)
+                    payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'], leeway=60)
                     token_decode = 'ok'
                     user_id = payload.get('user_id')
                     if user_id:
