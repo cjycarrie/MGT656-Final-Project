@@ -280,7 +280,13 @@ def token_debug(request):
 
     token = auth.split(None, 1)[1].strip()
     try:
-        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'], leeway=60)
+        payload = jwt.decode(
+            token,
+            settings.SECRET_KEY,
+            algorithms=['HS256'],
+            leeway=60,
+            options={"verify_iat": False},
+        )
         # Only include small, non-sensitive pieces of payload
         result['token_decode'] = 'ok'
         result['user_id'] = payload.get('user_id')
