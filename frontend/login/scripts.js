@@ -2,7 +2,9 @@ const form = document.getElementById('signin-form');
 const msgEl = document.getElementById('message');
 const btn = document.getElementById('loginBtn');
 
-const BASE = 'https://trackly-3smc.onrender.com';
+const BASE = (typeof window !== 'undefined' && window.TRACKLY_API_BASE)
+  ? window.TRACKLY_API_BASE
+  : (typeof window !== 'undefined' ? window.location.origin + '/api' : 'https://trackly-3smc.onrender.com');
 
 function getCookie(name) {
   const value = document.cookie.split('; ').find(row => row.startsWith(name + '='));
@@ -45,26 +47,27 @@ if (form) {
       btn.disabled = true;
       btn.textContent = 'Signing in...';
 
-      // Prefer token-based login for cross-origin compatibility. Try /token/ first.
-      let response = await fetch(`${BASE}/token/`, {
+      // Prefer session-based login when on same-origin. Use CSRF helper then
+      // POST to /login/ with credentials included.
+      const csrf = await ensureCsrf();
+      let response = await fetch(`${BASE}/login/`, {
         method: 'POST',
+        credentials: 'include',
         mode: 'cors',
-        headers: { 'Content-Type': 'application/json', 'Referer': window.location.origin },
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrf || '',
+          'Referer': window.location.origin,
+        },
         body: JSON.stringify({ username, password }),
       });
 
-      // If token login failed with 405/404, fall back to cookie-based login
+      // If session login fails, fall back to token login for compatibility.
       if (!response.ok && (response.status === 404 || response.status === 405 || response.status === 401)) {
-        const csrf = await ensureCsrf();
-        response = await fetch(`${BASE}/login/`, {
+        response = await fetch(`${BASE}/token/`, {
           method: 'POST',
-          credentials: 'include',
           mode: 'cors',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': csrf || '',
-            'Referer': window.location.origin
-          },
+          headers: { 'Content-Type': 'application/json', 'Referer': window.location.origin },
           body: JSON.stringify({ username, password }),
         });
       }
@@ -79,11 +82,11 @@ if (form) {
       const data = await response.json().catch(() => null);
       // If token-based login returned a token, save it
       if (data && data.token) {
+        // token-based login
         localStorage.setItem('trackly_token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user || {}));
       } else {
-        // session-based login
-        try { await ensureCsrf(); } catch (e) { }
+        // session-based login: store user info if provided
         localStorage.setItem('user', JSON.stringify(data || {}));
       }
       window.location.href = '../profile/index.html';
