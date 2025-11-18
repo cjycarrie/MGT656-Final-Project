@@ -41,19 +41,25 @@ class TokenAuthMiddleware:
                             user_found = user_id
                         except User.DoesNotExist:
                             user_found = None
-                except Exception:
+                except Exception as exc:
                     token_decode = 'error'
+                    token_error = str(exc)
         finally:
             # Emit a short, structured log for debugging. This avoids exposing
             # secrets while showing whether the header was present and if a
             # matching user was found.
             try:
-                logger.info(json.dumps({
+                payload = {
                     'path': getattr(request, 'path', None),
                     'auth_header': has_auth,
                     'token_decode': token_decode,
                     'user_found': user_found,
-                }))
+                }
+                # Optionally include a short error message from token decode
+                # for debugging (this will not include token contents).
+                if 'token_error' in locals():
+                    payload['token_error'] = token_error[:512]
+                logger.info(json.dumps(payload))
             except Exception:
                 pass
 
