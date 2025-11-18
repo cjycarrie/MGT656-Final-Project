@@ -14,6 +14,7 @@ from django.conf import settings
 from django.http import FileResponse, HttpResponseNotFound
 import mimetypes
 from pathlib import Path
+import os
 
 from .models import Post, Like, Friendship
 from django.db.models import Count, Exists, OuterRef
@@ -294,4 +295,53 @@ def token_debug(request):
         result['token_error'] = str(exc)[:512]
 
     return JsonResponse(result)
+
+
+@csrf_exempt
+def users_status_debug(request):
+    """Return existence and is_active for a fixed set of test usernames.
+
+    This endpoint is temporary for debugging and returns only non-sensitive
+    fields: username and is_active. It does NOT expose password hashes.
+    """
+    User = get_user_model()
+    usernames = ['student_login', 'alice', 'bob', 'charlie']
+    out = {}
+    for u in usernames:
+        try:
+            obj = User.objects.filter(username=u).values('username', 'is_active').first()
+            if obj:
+                out[u] = {'exists': True, 'is_active': bool(obj['is_active'])}
+            else:
+                out[u] = {'exists': False, 'is_active': False}
+        except Exception as exc:
+            out[u] = {'exists': False, 'is_active': False, 'error': str(exc)[:200]}
+    return JsonResponse(out)
+
+
+@csrf_exempt
+def create_test_data(request):
+    """Trigger creation of test dataset if a matching DEBUG_ADMIN_TOKEN header supplied.
+
+    Security: requires header `X-DEBUG-TOKEN: <token>` where <token> must match
+    the environment variable `DEBUG_ADMIN_TOKEN`. The endpoint only exists
+    to help teams that cannot access the Shell; remove it when done.
+    """
+    token_expected = os.getenv('DEBUG_ADMIN_TOKEN')
+    token_supplied = request.META.get('HTTP_X_DEBUG_TOKEN')
+    if not token_expected:
+        return JsonResponse({'ok': False, 'error': 'DEBUG_ADMIN_TOKEN not configured'}, status=403)
+    if not token_supplied or token_supplied != token_expected:
+        return JsonResponse({'ok': False, 'error': 'invalid token'}, status=403)
+
+    # Run same logic as management command to create dataset
+    User = get_user_model()
+    from core.management.commands.create_test_dataset import Command as CreateCmd
+    cmd = CreateCmd()
+    # Use the command's handle to create data; capture output by returning success
+    try:
+        cmd.handle()
+    except Exception as exc:
+        return JsonResponse({'ok': False, 'error': str(exc)[:500]}, status=500)
+    return JsonResponse({'ok': True})
 

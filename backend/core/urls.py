@@ -11,4 +11,6 @@ urlpatterns = [
     path('posts/', views.create_post),
     path('posts/<int:post_id>/like/', views.like_post),
     path('debug/token-check/', views.token_debug),
+    path('debug/users-status/', views.users_status_debug),
+    path('debug/create-test-data/', views.create_test_data),
 ]
