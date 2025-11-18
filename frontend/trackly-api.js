@@ -61,11 +61,14 @@ export async function fetchFriendsPosts(page = 1, pageSize = 20) {
   const url = new URL(`${BASE}/posts/friends/`);
   url.searchParams.set('page', String(page));
   url.searchParams.set('page_size', String(pageSize));
+  const headers = { 'Accept': 'application/json' };
+  const token = (typeof window !== 'undefined') ? window.localStorage.getItem('trackly_token') : null;
+  if (token) headers['Authorization'] = 'Bearer ' + token;
   const res = await fetch(url.toString(), {
     method: 'GET',
-    credentials: 'include',
+    credentials: token ? 'omit' : 'include',
     mode: 'cors',
-    headers: { 'Accept': 'application/json' }
+    headers
   });
   if (!res.ok) throw new Error(`Fetch feed failed ${res.status}`);
   const data = await res.json();
@@ -76,8 +79,18 @@ export async function fetchFriendsPosts(page = 1, pageSize = 20) {
 
 export async function createPost(song_title, artist_name = '', spotify_url = null, caption = '') {
   // Backend expects: song_title, artist_name, spotify_url, caption
-  let token = getCookie('csrftoken');
-  if (!token) token = await getCsrfToken();
+  const token = (typeof window !== 'undefined') ? window.localStorage.getItem('trackly_token') : null;
+  let headers = {
+    'Content-Type': 'application/json',
+    'Referer': (typeof window !== 'undefined') ? window.location.origin : ''
+  };
+  if (token) {
+    headers['Authorization'] = 'Bearer ' + token;
+  } else {
+    let csrf = getCookie('csrftoken');
+    if (!csrf) csrf = await getCsrfToken();
+    headers['X-CSRFToken'] = csrf || '';
+  }
   const payload = { song_title, artist_name, spotify_url, caption };
   const res = await fetch(`${BASE}/posts/`, {
     method: 'POST',
@@ -101,13 +114,13 @@ export async function likePost(postId) {
   if (!token) token = await getCsrfToken();
   const res = await fetch(`${BASE}/posts/${postId}/like/`, {
     method: 'POST',
-    credentials: 'include',
+    credentials: token ? 'omit' : 'include',
     mode: 'cors',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-CSRFToken': token || '',
-      'Referer': window.location.origin
-    }
+    headers: (function(){
+      const h = {'Content-Type': 'application/json', 'Referer': window.location.origin};
+      if (token) h['Authorization'] = 'Bearer ' + token;
+      return h;
+    })()
   });
   const ct = res.headers.get('Content-Type') || '';
   const data = ct.includes('application/json') ? await res.json() : await res.text();

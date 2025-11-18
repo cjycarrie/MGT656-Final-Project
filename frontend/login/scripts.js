@@ -45,20 +45,29 @@ if (form) {
       btn.disabled = true;
       btn.textContent = 'Signing in...';
 
-      // Ensure CSRF cookie is set and include credentials so cookies are sent back and forth
-      const csrf = await ensureCsrf();
-
-      const response = await fetch(`${BASE}/login/`, {
+      // Prefer token-based login for cross-origin compatibility. Try /token/ first.
+      let response = await fetch(`${BASE}/token/`, {
         method: 'POST',
-        credentials: 'include',
         mode: 'cors',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': csrf || '',
-          'Referer': window.location.origin
-        },
+        headers: { 'Content-Type': 'application/json', 'Referer': window.location.origin },
         body: JSON.stringify({ username, password }),
       });
+
+      // If token login failed with 405/404, fall back to cookie-based login
+      if (!response.ok && (response.status === 404 || response.status === 405 || response.status === 401)) {
+        const csrf = await ensureCsrf();
+        response = await fetch(`${BASE}/login/`, {
+          method: 'POST',
+          credentials: 'include',
+          mode: 'cors',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrf || '',
+            'Referer': window.location.origin
+          },
+          body: JSON.stringify({ username, password }),
+        });
+      }
 
       if (!response.ok) {
         const text = await response.text().catch(() => null);
@@ -67,18 +76,16 @@ if (form) {
         btn.textContent = 'Sign in';
         return;
       }
-
       const data = await response.json().catch(() => null);
-      // After login the backend may rotate the CSRF token. Ensure we fetch
-      // the latest csrftoken cookie before navigating so subsequent POSTs
-      // use the up-to-date token.
-      try {
-        await ensureCsrf();
-      } catch (e) {
-        // ignore: even if refresh fails, we still navigate; frontend code
-        // will attempt to call /csrf/ on next state-changing requests.
+      // If token-based login returned a token, save it
+      if (data && data.token) {
+        localStorage.setItem('trackly_token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user || {}));
+      } else {
+        // session-based login
+        try { await ensureCsrf(); } catch (e) { }
+        localStorage.setItem('user', JSON.stringify(data || {}));
       }
-      localStorage.setItem('user', JSON.stringify(data || {}));
       window.location.href = '../profile/index.html';
     } catch (err) {
       console.error(err);
