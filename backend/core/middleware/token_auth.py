@@ -25,9 +25,9 @@ class TokenAuthMiddleware:
             if has_auth:
                 # Do not log the token itself. Only log presence and outcomes.
                 token = auth.split(None, 1)[1].strip()
-                    try:
-                        # Allow a small leeway to account for minor clock skew
-                        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'], leeway=10)
+                try:
+                    # Allow a small leeway to account for minor clock skew
+                    payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'], leeway=10)
                     token_decode = 'ok'
                     user_id = payload.get('user_id')
                     if user_id:
