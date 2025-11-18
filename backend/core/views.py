@@ -15,6 +15,7 @@ from django.http import FileResponse, HttpResponseNotFound
 import mimetypes
 from pathlib import Path
 import os
+from django.contrib.auth import authenticate
 
 from .models import Post, Like, Friendship
 from django.db.models import Count, Exists, OuterRef
@@ -344,4 +345,23 @@ def create_test_data(request):
     except Exception as exc:
         return JsonResponse({'ok': False, 'error': str(exc)[:500]}, status=500)
     return JsonResponse({'ok': True})
+
+
+@csrf_exempt
+def auth_check_debug(request):
+    """Check whether each test user can authenticate with password '123456'.
+
+    This attempts to `authenticate(username, '123456')` and returns a
+    boolean per user. It does NOT reveal password hashes or any secrets.
+    """
+    User = get_user_model()
+    usernames = ['student_login', 'alice', 'bob', 'charlie']
+    out = {}
+    for u in usernames:
+        try:
+            user = authenticate(username=u, password='123456')
+            out[u] = {'can_authenticate_with_123456': bool(user)}
+        except Exception as exc:
+            out[u] = {'can_authenticate_with_123456': False, 'error': str(exc)[:200]}
+    return JsonResponse(out)
 

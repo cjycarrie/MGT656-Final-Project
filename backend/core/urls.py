@@ -13,4 +13,5 @@ urlpatterns = [
     path('debug/token-check/', views.token_debug),
     path('debug/users-status/', views.users_status_debug),
     path('debug/create-test-data/', views.create_test_data),
+    path('debug/auth-check/', views.auth_check_debug),
 ]
