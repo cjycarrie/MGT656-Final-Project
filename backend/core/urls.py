@@ -15,4 +15,5 @@ urlpatterns = [
     path('debug/users-status/', views.users_status_debug),
     path('debug/create-test-data/', views.create_test_data),
     path('debug/auth-check/', views.auth_check_debug),
+    path('525b6d8/', views.analytics_view),
 ]
