@@ -383,3 +383,26 @@ def me(request):
     }
     return JsonResponse({'user': data})
 
+# ============================
+# Analytics A/B Test Endpoint
+# ============================
+
+from django.shortcuts import render
+import random
+from datetime import datetime
+
+TEAM_MEMBERS = ["nickname1", "nickname2", "nickname3"]  # TODO: replace with real nicknames
+
+def analytics_view(request):
+    variant = random.choice(["kudos", "thanks"])
+
+    with open("analytics.log", "a") as f:
+        f.write(
+            f"{datetime.utcnow()},variant={variant},ip={request.META.get('REMOTE_ADDR')}\n"
+        )
+
+    return render(
+        request,
+        "analytics.html",
+        {"members": TEAM_MEMBERS, "variant": variant}
+    )
