@@ -2,6 +2,8 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
+    path('525b6d8/', views.analytics_view),   
+
     path('', views.ok),
     path('login/', views.login_view),
     path('csrf/', views.csrf),
@@ -16,4 +18,3 @@ urlpatterns = [
     path('debug/create-test-data/', views.create_test_data),
     path('debug/auth-check/', views.auth_check_debug),
 ]
-
