@@ -1,1 +1,15 @@
+<!DOCTYPE html>
+<html>
+  <body>
+    <h2>Team Members</h2>
+
+    <ul>
+      {% for m in members %}
+        <li>{{ m }}</li>
+      {% endfor %}
+    </ul>
+
+    <button id="abtest">{{ variant }}</button>
+  </body>
+</html>
 
