@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Analytics</title>
+
+    <!-- Google Analytics 4 (GA4) tag -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-DFPHCKXT2W"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){ dataLayer.push(arguments); }
+      gtag('js', new Date());
+
+      gtag('config', 'G-DFPHCKXT2W');
+    </script>
+  </head>
+
+  <body>
+    <h2>Team Members</h2>
+
+    <ul>
+      {% for m in members %}
+        <li>{{ m }}</li>
+      {% endfor %}
+    </ul>
+
+    <!-- A/B Test Button -->
+    <button id="abtest">{{ variant }}</button>
+
+    <!-- Track Button Click Event in Google Analytics -->
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const btn = document.getElementById("abtest");
+        if (btn) {
+          btn.addEventListener("click", function () {
+            gtag("event", "abtest_click", {
+              event_category: "ab_test",
+              event_label: "{{ variant }}",
+              variant: "{{ variant }}"
+            });
+          });
+        }
+      });
+    </script>
+
+  </body>
+</html>
