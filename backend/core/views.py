@@ -391,7 +391,7 @@ from django.shortcuts import render
 import random
 from datetime import datetime
 
-TEAM_MEMBERS = ["sparkling-cobra", "energetic-cheetah", "nickname3"]  # TODO: replace with real nicknames
+TEAM_MEMBERS = ["sparkling-cobra", "energetic-cheetah", "crowded-hornet"]  # TODO: replace with real nicknames
 
 def analytics_view(request):
     variant = random.choice(["kudos", "thanks"])
