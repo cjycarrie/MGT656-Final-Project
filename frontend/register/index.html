@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Trackly – Login</title>
+  <title>Trackly – Register</title>
   <link rel="stylesheet" href="styles.css" />
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
@@ -11,24 +11,30 @@
 <body class="bg-white">
 
   <div class="flex flex-col items-center mt-14">
-    <img src="assets/Trackly.png" class="w-40 mb-12" alt="Trackly logo">
+    <img src="../assets/Trackly.png" class="w-40 mb-12" alt="Trackly logo">
 
-    <h1 class="text-2xl font-semibold text-purple-800">Sign in</h1>
-    <p class="text-gray-500 mb-4">Enter your username/email and password</p>
+    <h1 class="text-2xl font-semibold text-purple-800">Create Account</h1>
+    <p class="text-gray-500 mb-4">Sign up to get started</p>
 
-    <form id="signin-form" class="w-full flex flex-col items-center">
-      <input id="username" name="username" type="text" placeholder="username or email"
+    <form id="register-form" class="w-full flex flex-col items-center">
+      <input id="username" name="username" type="text" placeholder="username"
+        class="input-box" />
+
+      <input id="email" name="email" type="email" placeholder="email"
         class="input-box" />
 
       <input id="password" name="password" type="password" placeholder="password"
         class="input-box" />
 
+      <input id="password-confirm" name="password-confirm" type="password" placeholder="confirm password"
+        class="input-box" />
+
       <div id="message" class="text-sm text-red-600 mt-2 min-h-[1rem]"></div>
 
-      <button id="loginBtn" type="submit" class="btn-primary">Sign in</button>
+      <button id="registerBtn" type="submit" class="btn-primary">Sign up</button>
 
       <p class="text-gray-600 mt-4">
-        Don't have an account? <a href="../register/index.html" class="text-purple-600 font-semibold hover:underline">Sign up</a>
+        Already have an account? <a href="../login/index.html" class="text-purple-600 font-semibold hover:underline">Sign in</a>
       </p>
     </form>
   </div>
@@ -36,7 +42,7 @@
   <script>
     // Use backend same-origin API base
     window.TRACKLY_API_BASE = window.location.origin + '/api';
-    // Cache-bust for login script to ensure latest JS is loaded after deploys
+    // Cache-bust for register script to ensure latest JS is loaded after deploys
     (function(){
       const s = document.createElement('script');
       s.src = 'scripts.js?v=' + Date.now();

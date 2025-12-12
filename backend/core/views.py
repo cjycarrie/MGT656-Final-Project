@@ -26,6 +26,47 @@ def ok(request):
     return HttpResponse('OK')
 
 
+def register_view(request):
+    """User registration endpoint.
+
+    Accepts JSON {"username": "...", "email": "...", "password": "..."}.
+    Creates a new user account and returns 201 on success, else 400.
+    """
+    if request.method != 'POST':
+        return JsonResponse({'detail': 'method not allowed'}, status=405)
+
+    try:
+        data = json.loads(request.body.decode('utf-8') or '{}')
+    except Exception:
+        return JsonResponse({'detail': 'bad request: invalid json'}, status=400)
+
+    username = data.get('username', '').strip()
+    email = data.get('email', '').strip()
+    password = data.get('password', '').strip()
+
+    if not username or not email or not password:
+        return JsonResponse({'detail': 'username, email, and password are required'}, status=400)
+
+    if len(password) < 6:
+        return JsonResponse({'detail': 'password must be at least 6 characters long'}, status=400)
+
+    # Check if username already exists
+    User = get_user_model()
+    if User.objects.filter(username=username).exists():
+        return JsonResponse({'detail': 'username already taken'}, status=400)
+
+    # Check if email already exists
+    if User.objects.filter(email=email).exists():
+        return JsonResponse({'detail': 'email already registered'}, status=400)
+
+    try:
+        # Create the user
+        user = User.objects.create_user(username=username, email=email, password=password)
+        return JsonResponse({'status': 'OK', 'user': {'id': user.id, 'username': user.username, 'email': user.email}}, status=201)
+    except Exception as e:
+        return JsonResponse({'detail': f'registration failed: {str(e)}'}, status=400)
+
+
 def login_view(request):
     """Simple POST login that authenticates against Django's auth system.
 
@@ -72,6 +113,7 @@ def login_view(request):
         auth_login(request, user)
         return JsonResponse({'status': 'OK'})
     return JsonResponse({'status': 'invalid'}, status=401)
+
 
 
 @csrf_exempt
